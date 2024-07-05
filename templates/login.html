@@ -1,0 +1,60 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+
+<div class="container mt-5">
+    <h1 class="text-center m-y-10">Login with Google</h1>
+    <button class="btn btn-primary btn-sm" id="login-button">Login with Google</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyD5tbpDhEXV-Gnx7hwA15UbiUYh5d0LmxM",
+        authDomain: "licenta-ead67.firebaseapp.com",
+        projectId: "licenta-ead67",
+        storageBucket: "licenta-ead67.appspot.com",
+        messagingSenderId: "880914266003",
+        appId: "1:880914266003:web:dfc6073902f4443b2e5a66",
+        measurementId: "G-PBBQH66NR2"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    document.getElementById('login-button').addEventListener('click', function () {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider).then(function (result) {
+            var user = result.user;
+            user.getIdToken().then(function (idToken) {
+                fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ idToken: idToken })
+                })
+                    .then(response => {
+                        if (!response.ok)
+                            throw Error("Login Failed")
+                        return response.json()
+                    })
+                    .then(data => {
+                        // console.log(data);
+                        window.authUserId = data.uuid
+                        window.location.replace("/main")
+                    });
+            });
+        }).catch(function (error) {
+            console.error("Error during login", error);
+            alert(error)
+        });
+    });
+</script>
+{% endblock %}

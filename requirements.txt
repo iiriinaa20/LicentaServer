@@ -1,0 +1,111 @@
+### Web Framework and Related:
+Flask==3.0.3
+Flask-Dance==7.1.0
+Flask-SocketIO==5.3.6
+click==8.1.7
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==2.1.5
+Werkzeug==3.0.3
+
+### Socket and WebSocket:
+blinker==1.8.2
+dnspython==2.6.1
+eventlet==0.36.1
+greenlet==3.0.3
+python-engineio==4.9.1
+python-socketio==5.11.2
+simple-websocket==1.0.0
+wsproto==1.2.0
+
+### Google Cloud and Firebase:
+firebase-admin==6.5.0
+google-api-core==2.19.0
+google-api-python-client==2.130.0
+google-auth==2.29.0
+google-auth-httplib2==0.2.0
+google-cloud-core==2.4.1
+google-cloud-firestore==2.16.0
+google-cloud-storage==2.16.0
+google-crc32c==1.5.0
+google-resumable-media==2.7.0
+googleapis-common-protos==1.63.0
+
+### Authentication and Authorization:
+oauthlib==3.2.2
+PyJWT==2.8.0
+requests-oauthlib==2.0.0
+rsa==4.9
+
+### HTTP and Requests:
+CacheControl==0.14.0
+cachetools==5.3.3
+certifi==2024.2.2
+charset-normalizer==3.3.2
+httplib2==0.22.0
+idna==3.7
+requests==2.32.2
+urllib3==2.2.1
+
+### Cryptography:
+cffi==1.16.0
+cryptography==42.0.7
+pycparser==2.22
+
+### Machine Learning and Data Science:
+joblib==1.4.2
+networkx==3.3
+numpy==1.26.4
+opencv-python==4.9.0.80
+scikit-learn==1.5.0
+scipy==1.13.1
+threadpoolctl==3.5.0
+# torch==2.3.0+cu121
+# torchaudio==2.3.0+cu121
+# torchvision==0.18.0+cu121
+
+pyparsing==3.1.2
+# pytorch-gpu==0.0.1
+# torch==2.3.1+cu121
+# torchaudio==2.3.1+cu121
+# torchvision==0.18.1+cu121
+filelock==3.13.1
+grpcio==1.64.1
+grpcio-status==1.62.2
+Markdown==3.6
+
+
+tdqm==0.0.1
+tensorboard==2.16.2
+tensorboard-data-server==0.7.2
+tensorboardX==2.6.2.2
+tqdm==4.66.4
+
+### Other Libraries and Tools:
+absl-py==2.1.0
+bidict==0.23.1
+colorama==0.4.6
+fsspec==2024.3.1
+h11==0.14.0
+intel-openmp==2021.4.0
+mkl==2021.4.0
+mpmath==1.3.0
+msgpack==1.0.8
+packaging==24.0
+pillow==10.2.0
+proto-plus==1.23.0
+protobuf==4.25.3
+pyasn1==0.6.0
+pyasn1_modules==0.4.0
+setuptools==70.0.0
+six==1.16.0
+sympy==1.12
+tbb==2021.12.0
+typing_extensions==4.11.0
+uritemplate==4.1.1
+URLObject==2.4.3
+
+### Optional Group:
+pytorch-gpu==0.0.1
+
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

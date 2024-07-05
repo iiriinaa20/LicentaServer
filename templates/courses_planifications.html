@@ -1,0 +1,221 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<div>
+    <h1 class="text-center m-y-10">Courses Planification Management</h1>
+    <br>
+    <div class="container">
+        <h2 class="text-center m-y-10">Add Planification</h2>
+        <form id="add-planification-form" class="row">
+            <div class="col-md-3 form-group">
+                <label for="user_id">User ID</label>
+                <select class="form-control" id="user_id" required>
+                    <option value="">Select a user</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="course_id">Course ID</label>
+                <select class="form-control" id="course_id" required>
+                    <option value="">Select a course</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="date">Date</label>
+                <input type="date" class="form-control" id="date" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="start_time">Start Time</label>
+                <input type="time" class="form-control" id="start_time" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="end_time">End Time</label>
+                <input type="time" class="form-control" id="end_time" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="end_time">Planification type</label>
+                <select name="planification" id="planification">
+                    <option value="1">Weekly</option>
+                    <option value="2">Monthly</option>
+                    <option value="3">Twice per week</option>
+                </select>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="submit" style="visibility: hidden;">A</label>
+                <button type="submit" class="form-control btn btn-primary">Add Planification</button>
+            </div>
+            <div class="col-md-3"></div>
+        </form>
+    </div>
+    <hr>
+    <h2 class="text-center m-y-10">Planifications List</h2>
+    <table class="table table-striped table-responsive">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>Course ID</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="planifications-table-body">
+            <!-- Planifications will be dynamically added here -->
+        </tbody>
+    </table>
+    <div class="row">
+        <h2 class="text-center m-y-10">Update Planification</h2>
+        <form id="update-planification-form" class="row">
+            <div class="col-md-3 form-group">
+                <label for="update-planification-id">Planification ID</label>
+                <input type="text" readonly class="form-control" id="update-planification-id" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="update-user_id">User ID</label>
+                <input type="text" class="form-control" id="update-user_id" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="update-course_id">Course ID</label>
+                <input type="text" class="form-control" id="update-course_id" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="update-date">Date</label>
+                <input type="date" class="form-control" id="update-date" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="update-start_time">Start Time</label>
+                <input type="time" class="form-control" id="update-start_time" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="update-end_time">End Time</label>
+                <input type="time" class="form-control" id="update-end_time" required>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="submit" style="visibility: hidden;">A</label>
+                <button type="submit" class="form-control btn btn-warning">Update Planification</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $("#user_id").select2();
+    $("#course_id").select2();
+    $("#planification").select2();
+
+    function fetchPlanifications() {
+        $.get("/courses_planifications", function (data) {
+            const planificationsTableBody = $("#planifications-table-body");
+            planificationsTableBody.empty();
+            data.forEach(planification => {
+                planificationsTableBody.append(`
+                        <tr>
+                            <td>${planification.id}</td>
+                            <td>${planification.user_id}</td>
+                            <td>${planification.course_id}</td>
+                            <td>${planification.date}</td>
+                            <td>${planification.start_time}</td>
+                            <td>${planification.end_time}</td>
+                            <td>
+                                <button class="btn btn-info btn-md m-1" onclick="readPlanification('${planification.id}')">Read</button>
+                                <button class="btn btn-warning btn-md m-1" onclick="loadPlanificationToUpdate('${planification.id}')">Update</button>
+                                <button class="btn btn-danger btn-md m-1" onclick="deletePlanification('${planification.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+            });
+        });
+    }
+
+    function readPlanification(planificationId) {
+        $.get(`/courses_planification/${planificationId}`, function (data) {
+            alert(JSON.stringify(data, null, 2));
+        }).fail(function () {
+            alert("Planification not found");
+        });
+    }
+
+    function deletePlanification(planificationId) {
+        $.ajax({
+            url: `/courses_planification/${planificationId}`,
+            type: 'DELETE',
+            success: function (result) {
+                fetchPlanifications();
+            }
+        });
+    }
+
+    function loadPlanificationToUpdate(planificationId) {
+        $.get(`/courses_planification/${planificationId}`, function (data) {
+            $("#update-planification-id").val(planificationId);
+            $("#update-user_id").val(data.user_id);
+            $("#update-course_id").val(data.course_id);
+            $("#update-date").val(data.date);
+            $("#update-start_time").val(data.start_time);
+            $("#update-end_time").val(data.end_time);
+        }).fail(function () {
+            alert("Planification not found");
+        });
+    }
+
+    $(document).ready(function () {
+        fetchPlanifications();
+
+        $("#add-planification-form").submit(function (event) {
+            event.preventDefault();
+            const data = {
+                user_id: $("#user_id").val(),
+                course_id: $("#course_id").val(),
+                date: $("#date").val(),
+                start_time: $("#start_time").val(),
+                end_time: $("#end_time").val(),
+                planification_type: $("#planification").val()
+            };
+            $.ajax({
+                url: "/courses_planification",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function () {
+                    fetchPlanifications();
+                    $("#add-planification-form")[0].reset();
+                }
+            });
+        });
+
+        $("#update-planification-form").submit(function (event) {
+            event.preventDefault();
+            const planificationId = $("#update-planification-id").val();
+            const data = {
+                user_id: $("#update-user_id").val(),
+                course_id: $("#update-course_id").val(),
+                date: $("#update-date").val(),
+                start_time: $("#update-start_time").val(),
+                end_time: $("#update-end_time").val()
+            };
+            $.ajax({
+                url: `/courses_planification/${planificationId}`,
+                type: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function () {
+                    fetchPlanifications();
+                    $("#update-planification-form")[0].reset();
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

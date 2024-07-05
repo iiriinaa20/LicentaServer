@@ -1,0 +1,182 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div >
+    <h1 class="text-center m-y-10">User Management</h1>
+    <br>
+    <h2 class="text-center">Add User</h2>
+    <div>
+        <form id="add-user-form" class="row">
+            <div class="col-md-3 form-group">
+                <label for="name">User Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="col-md-4 form-group">
+                <label for="email">E-mail</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="type">Type</label>
+                <select class="form-control" id="type" required>
+                    <option value="teacher">Teacher</option>
+                    <option value="student">Student</option>
+                </select>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="submit" style="visibility: hidden;">A</label>
+                <button type="submit" class="form-control btn btn-primary">Add User</button>
+            </div>
+        </form>
+    </div>
+    <hr>
+    <h2 class="text-center m-y-10">Users List</h2>
+    <div class="row">
+        <table class="table table-striped table-responsive ">
+            <thead>
+                <tr >
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>E-mail</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body">
+                <!-- Users will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <h2 class="text-center">Update User</h2>
+        <br>
+        <div>
+            <form id="update-user-form" class="row">
+                <div class="col-md-3 form-group">
+                    <label for="update-user-id">User ID</label>
+                    <input type="text" readonly class="form-control" id="update-user-id" required>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label for="update-name">User Name</label>
+                    <input type="text" class="form-control" id="update-name" required>
+                </div>
+                <div class="col-md-2 form-group">
+                    <label for="update-email">E-mail</label>
+                    <input type="email" class="form-control" id="update-email" required>
+                </div>
+                <div class="col-md-2 form-group">
+                    <label for="update-type">Type</label>
+                    <select class="form-control" id="update-type" required>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                    </select>
+                </div>
+                <div class="col-md-2 form-group">
+                    <label for="submit" style="visibility: hidden;">A</label>
+                    <button type="submit" class=" btn btn-warning form-control">Update User</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+        function fetchUsers() {
+            $.get("/users", function (data) {
+                const usersTableBody = $("#users-table-body");
+                usersTableBody.empty();
+                data.forEach(user => {
+                    usersTableBody.append(`
+                        <tr >
+                            <td>${user.id}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.type}</td>
+                            <td>
+                                <button class="btn btn-info btn-md" onclick="readUser('${user.id}')">Read</button>
+                                <button class="btn btn-warning btn-md" onclick="loadUserToUpdate('${user.id}')">Update</button>
+                                <button class="btn btn-danger btn-md" onclick="deleteUser('${user.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            });
+        }
+
+        function readUser(userId) {
+            $.get(`/users/${userId}`, function (data) {
+                alert(JSON.stringify(data, null, 2));
+            }).fail(function () {
+                alert("User not found");
+            });
+        }
+
+        function deleteUser(userId) {
+            $.ajax({
+                url: `/users/${userId}`,
+                type: 'DELETE',
+                success: function (result) {
+                    fetchUsers();
+                }
+            });
+        }
+
+        function loadUserToUpdate(userId) {
+            $.get(`/users/${userId}`, function (data) {
+                $("#update-user-id").val(userId);
+                $("#update-name").val(data.name);
+                $("#update-email").val(data.email);
+                $("#update-type").val(data.type);
+                $("#update-type").trigger("change");
+            }).fail(function () {
+                alert("User not found");
+            });
+        }
+
+        $(document).ready(function () {
+            fetchUsers();
+
+            $("#add-user-form").submit(function (event) {
+                event.preventDefault();
+                const data = {
+                    name: $("#name").val(),
+                    email: $("#email").val(),
+                    type: $("#type").val()
+                };
+                $.ajax({
+                    url: "/users",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function () {
+                        fetchUsers();
+                        $("#add-user-form")[0].reset();
+                    }
+                });
+            });
+
+            $("#update-user-form").submit(function (event) {
+                event.preventDefault();
+                const userId = $("#update-user-id").val();
+                const data = {
+                    name: $("#update-name").val(),
+                    email: $("#update-email").val(),
+                    type: $("#update-type").val()
+                };
+                $.ajax({
+                    url: `/users/${userId}`,
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function () {
+                        fetchUsers();
+                        $("#update-user-form")[0].reset();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

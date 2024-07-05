@@ -1,0 +1,71 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center m-y-10">Live Camera Feed</h1>
+    <button class="btn btn-info btn-sm" id="start-button">Start Camera</button>
+    <button class="btn btn-info btn-sm" id="stop-button">Stop Camera</button>
+    <br><br><br>
+    <img id="video-frame" alt="Camera Feed" style="max-width: 100%; height: auto;" />
+    <br>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+
+    <script>
+        function createSocket() {
+            return io({
+                transports: ['websocket'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+                timeout: 20000
+            });
+        }
+        let socket = createSocket()
+
+        const videoFrame = document.getElementById('video-frame');
+        const startButton = document.getElementById('start-button');
+        const stopButton = document.getElementById('stop-button');
+
+        startButton.addEventListener('click', () => {
+            fetch(`/start-camera?attendance_id=${encodeURIComponent(null)}`)
+                .then(response => {
+                    if (!response.ok)
+                        alert("Camera cannot be started")
+                    return response.json()
+                })
+                .then(data => {
+                    if (socket) {
+                        socket.open()
+                        // socket.emit('request_frame');
+                        setInterval(() => {
+                            socket.emit('request_frame');
+                        }, 20);
+                    }
+                });
+        });
+
+        stopButton.addEventListener('click', () => {
+            fetch('/stop-camera')
+                .then(response => {
+                    if (!response.ok) {
+                        console.log("Error stopping camera");
+                    }
+                    socket.close()
+                    videoFrame.src = "";
+                })
+        });
+
+        socket.on('new_frame', (frame) => {
+            const blob = new Blob([frame], { type: 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            videoFrame.src = url;
+        });
+    </script>
+
+{% endblock %}
