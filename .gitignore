@@ -1,2 +1,7 @@
-
-/myenv/*
+# /myenv/Include
+/myenv/Lib/*
+# /myenv/Library/*
+# /myenv/Scripts/*
+# /myenv/pyvenv.cfg
+# /myenv/share/*
+# /myenv/*
