@@ -42,3 +42,13 @@ class AttendanceRepository:
     def read_by_course_id(course_id):
         attendances_ref = AttendanceRepository.db_con.db.collection(AttendanceRepository.collection_name).where('course_id', '==', course_id).stream()
         return [{'id': attendance.id, **attendance.to_dict()} for attendance in attendances_ref]
+
+    @staticmethod
+    def read_by_course_id_user_id(course_id,user_id):
+        attendances_ref = AttendanceRepository.db_con.db.collection(AttendanceRepository.collection_name
+        ).where(field_path='course_id', op_string='==', value=course_id
+        ).where(field_path='user_id', op_string='==', value=user_id
+        ).stream()
+
+        attendances_ref = AttendanceRepository.db_con.db.collection(AttendanceRepository.collection_name).where('course_id', '==', course_id).where('user_id', '==', user_id).stream()
+        return [{'id': attendance.id, **attendance.to_dict()} for attendance in attendances_ref]

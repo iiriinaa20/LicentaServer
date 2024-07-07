@@ -8,7 +8,10 @@
     <br><br><br>
     <img id="video-frame" alt="Camera Feed" style="max-width: 100%; height: auto;" />
     <br>
-
+    <div class="container mt-5">
+        <h1 class="mb-4">Prediction Alerts</h1>
+        <div id="alerts"></div>
+    </div>
 </div>
 {% endblock %}
 
@@ -32,8 +35,9 @@
         const startButton = document.getElementById('start-button');
         const stopButton = document.getElementById('stop-button');
 
+        const random_id = "0tsk5TTz9RAoBzWRoJJd"
         startButton.addEventListener('click', () => {
-            fetch(`/start-camera?attendance_id=${encodeURIComponent(null)}`)
+            fetch(`/start-camera?attendance_id=${encodeURIComponent(random_id)}`)
                 .then(response => {
                     if (!response.ok)
                         alert("Camera cannot be started")
@@ -42,16 +46,15 @@
                 .then(data => {
                     if (socket) {
                         socket.open()
-                        // socket.emit('request_frame');
                         setInterval(() => {
-                            socket.emit('request_frame');
-                        }, 20);
+                            socket.emit('request_frame', {attendace_id: random_id});
+                        }, 150);
                     }
                 });
         });
 
         stopButton.addEventListener('click', () => {
-            fetch('/stop-camera')
+            fetch(`/stop-camera?attendance_id=${encodeURIComponent(random_id)}`)
                 .then(response => {
                     if (!response.ok) {
                         console.log("Error stopping camera");
@@ -61,11 +64,38 @@
                 })
         });
 
-        socket.on('new_frame', (frame) => {
-            const blob = new Blob([frame], { type: 'image/jpeg' });
+        socket.on('new_frame', (data) => {
+            const blob = new Blob([data], { type: 'image/jpeg' });
             const url = URL.createObjectURL(blob);
             videoFrame.src = url;
         });
+
+        socket.on('new_detection', (data) => {
+            console.log(data);
+            const alertsContainer = document.getElementById('alerts');
+            alertsContainer.innerHTML = '';
+            data.detections.forEach(item => {
+                // Best prediction alert
+                const bestPrediction = item.best_prediction[0];
+                const bestPredictionProbability = Math.round(bestPrediction[0] * 100, 2);
+                const successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success';
+                successAlert.innerHTML = `Best Prediction: Label ${bestPrediction[1]} with probability ${(parseFloat(bestPrediction[0])*100).toFixed(4)} %`;
+                alertsContainer.appendChild(successAlert);
+
+                // Other predictions alerts
+                item.predictions.forEach(prediction => {
+                    if (prediction.label !== bestPrediction[1]) {
+                        const infoAlert = document.createElement('div');
+                        const prob = Math.round(prediction.probability * 100, 2);
+                        infoAlert.className = 'alert alert-info';
+                        infoAlert.innerHTML = `Prediction: Label ${prediction.label} with probability ${(parseFloat(prediction.probability)*100).toFixed(4)} %`;
+                        alertsContainer.appendChild(infoAlert);
+                    }
+                });
+            });
+        });
+
     </script>
 
 {% endblock %}

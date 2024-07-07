@@ -4,6 +4,7 @@ from services.auth_service import AuthService
 from services.camera_service import CameraService
 from services.face_detection_service import FaceDetectionService
 from services.database_connector import DatabaseConnector
+from services.attendance_cnn_service import AttendanceCnnService
 
 from repositories.attendance_repository import AttendanceRepository
 from repositories.course_planification_repository import CoursesPlanificationRepository
@@ -17,8 +18,8 @@ FACE_DETECTION_SERVICE = FaceDetectionService(config_required=True,
                                               model_file_path=FACE_DETECTION_MODEL_FILE, 
                                               config_file_path=FACE_DETECTION_CONFIG_FILE, 
                                               face_cascade_path=FACE_DETECTION_CASCADE_NAME)
-
-CAMERA_SERVICE = CameraService(face_detection_service= FACE_DETECTION_SERVICE,attendance_cnn_service= None)
+ATTENDACE_CNN_SERVICE = AttendanceCnnService(model_path=MODEL_PATH, test_data_dir="C:\\Users\\mihae\\Desktop\\ooo\\a")
+CAMERA_SERVICE = CameraService(face_detection_service= FACE_DETECTION_SERVICE,attendance_cnn_service= ATTENDACE_CNN_SERVICE)
 
 DB_CONNECTOR_SERVICE = DatabaseConnector(AUTH_CREDENTIALS_PATH)
 

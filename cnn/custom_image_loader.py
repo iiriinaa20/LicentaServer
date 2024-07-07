@@ -8,7 +8,6 @@ class CustomImageFolder(ImageFolder):
         self.class_to_idx = {cls: i for i, cls in enumerate(sorted(os.listdir(images_root_directory)))}
 
     def __getitem__(self, index):
-        # Override the original method to return the correct label
         path, target = self.samples[index]
         sample = self.loader(path)
 

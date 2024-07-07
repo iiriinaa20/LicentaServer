@@ -152,18 +152,18 @@ class CnnTrainer:
                     break
 
     def predict(self, model_path, test_data):
-        print('Loading Best Model')
+        # print('Loading Best Model')
         self.load_model(model_path)
         
-        print('Starting Testing')
+        # print('Starting Testing')
         self.set_test_data(test_data)
          
         self.model.eval()
         top5_predictions = []
 
         with torch.no_grad():
-            for data, target in self.test_loader:
-                data, target = data.to(self.device), target.to(self.device)
+            for data in self.test_loader:
+                data = data.to(self.device)
                 output = self.model(data)
 
                 # Get top 5 predictions with probabilities
@@ -172,14 +172,13 @@ class CnnTrainer:
 
                 for i in range(data.size(0)):
                     top5_predictions.append({
-                        'target': target[i].item(),
                         'predictions': [
                             {'label': top5_indices[i, j].item(), 'probability': top5_probs[i, j].item()}
                             for j in range(5)
                         ]
                     })
                     
-        return top5_predictions
+        return top5_predictions[0]
 
     # def set_test_data(self, test_data):
     #     test_size = len(test_data)

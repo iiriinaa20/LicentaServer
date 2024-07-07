@@ -7,3 +7,4 @@ FACE_DETECTION_CONFIG_FILE = "./dnn/deploy.prototxt"
 
 FACE_DETECTION_CASCADE_NAME = "haarcascade_frontalface_default.xml"
 FACE_DETECTION_CASCADE_NAME = "lbpcascade_frontalface.xml"
+MODEL_PATH = "C:\\Users\\mihae\\Desktop\\LF\\a_main_model.pth"

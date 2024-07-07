@@ -4,13 +4,12 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torch.utils.tensorboard import SummaryWriter
-from custom_image_loader import CustomImageFolder
-from cnn import CNN
-from cnn_trainer import CnnTrainer
+from cnn.custom_image_loader import CustomImageFolder
+from cnn.cnn import CNN
+from cnn.cnn_trainer import CnnTrainer
 
 class CnnWrapper():
     def __init__(self, test_data_dir, model_path, batch_size = 128, learning_rate= 0.0002, has_training = False):
-        # Example usage
         self.transform = transforms.Compose([
             transforms.Grayscale(),
             transforms.Resize((112, 112)),
@@ -29,17 +28,22 @@ class CnnWrapper():
         else:
             train_size = 0
             val_size = 0
-            test_size = total_size
+            test_size = total_size 
         
         train_data, val_data, test_data = torch.utils.data.random_split(
             self.dataset, [train_size, val_size, test_size], 
             generator=torch.Generator().manual_seed(42)
         )
 
-        self.train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-        self.val_loader = DataLoader(val_data, batch_size=batch_size)
-        self.test_loader = DataLoader(test_data, batch_size=batch_size)
-
+        if has_training:
+            self.train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+            self.val_loader = DataLoader(val_data, batch_size=batch_size)
+            self.test_loader = DataLoader(test_data, batch_size=batch_size)
+        else:
+            self.train_loader = []
+            self.val_loader = []
+            self.test_loader = DataLoader(test_data, batch_size=batch_size)
+            
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.num_classes = len(self.dataset.classes)
         self.model = CNN(self.num_classes).to(self.device)

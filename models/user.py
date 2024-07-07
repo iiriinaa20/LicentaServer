@@ -15,3 +15,10 @@ class User:
     email: str
     name: str
     type: Literal['teacher', 'student']
+
+
+@dataclass
+class Label:
+
+    label: int
+    user_id: str

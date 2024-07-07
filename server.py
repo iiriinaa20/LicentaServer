@@ -10,8 +10,8 @@ from repositories.user_repository import UserRepository
 
 from datetime import datetime, timedelta
 import copy
-
 class FlaskServer:
+    
     def __init__(self, ip: str, port: int, main_url: str, camera_service: CameraService, auth_service: AuthService):
         self.tracking_attendances = dict()
         self.ip = ip
@@ -62,7 +62,7 @@ class FlaskServer:
                 attendance_id = None
                 attendance_id = request.args.get('attendance_id')
 
-                if(attendance_id in self.tracking_attendances.keys()):
+                if(attendance_id in self.tracking_attendances.keys() and self.tracking_attendances[attendance_id] == True):
                     return jsonify({"message": "Camera feed already started"}), 200
                 
                 self.tracking_attendances[attendance_id] = True
@@ -70,6 +70,7 @@ class FlaskServer:
 
                 return jsonify({"message": "Camera feed started"}), 200
             except Exception as e:
+                # print(str(e))
                 return jsonify({"message": "Failed", "error": str(e)}), 500
 
         @self.app.route('/stop-camera', methods=['GET'])
@@ -77,10 +78,11 @@ class FlaskServer:
             try:
                 attendance_id = None
                 attendance_id = request.args.get('attendance_id')
-                if(attendance_id in self.tracking_attendances.keys()):
+                # print(attendance_id)
+                if(attendance_id in self.tracking_attendances.keys() and self.tracking_attendances[attendance_id] == True):
                     self.tracking_attendances[attendance_id] = False
                     self.camera_service.stop_camera(attendance_id)
-                return jsonify({"message": "Camera feed stopped"}), 200
+                    return jsonify({"message": "Camera feed stopped"}), 200
             except Exception as e:
                 return jsonify({"message": "Failed", "error": str(e)}), 500
        
@@ -193,13 +195,15 @@ class FlaskServer:
             courses = CoursesPlanificationRepository.read_all()
             return jsonify(courses), 200
         
-        @self.app.route('/courses_planification/by_teacher', methods=['GET'])
-        def read_courses_planifications_by_teacher():
-            user_id = request.args.get('teacher_id')
-            courses_planification = CoursesPlanificationRepository.read_by_teacher(user_id)
+        @self.app.route('/courses_planification/<teacher_id>/by_teacher', methods=['GET'])
+        def read_by_teacher(teacher_id):
+            courses_planification = CoursesPlanificationRepository.read_by_teacher(teacher_id)
             courses = []
             for course_group in courses_planification:
                 courses.append(CourseRepository.read(course_group['course_id']))
+
+            courses = list(dict([(course['id'], course) for course in courses]).values())
+            print(courses)
             return jsonify(courses), 200
         
         @self.app.route('/courses_planification/by_date', methods=['GET'])
@@ -247,8 +251,8 @@ class FlaskServer:
             filtered_attendances = [attendance for attendance in attendances if attendance['user_id'] == user_id]
             return jsonify(filtered_attendances), 200
         
-        def read_attendancee():
-            course_id = request.args.get('course_id')
+        @self.app.route('/attendances/<course_id>/by_course', methods=['GET'])
+        def read_attendances_by_course(course_id):
             attendances = AttendanceRepository.read_all()
             filtered_attendances = [attendance for attendance in attendances if attendance['course_id'] == course_id]
             return jsonify(filtered_attendances), 200
@@ -290,6 +294,7 @@ class FlaskServer:
         # UI ROUTES
         @self.app.route('/main')
         def main():
+            # UserRepository.generate_labels()
             return render_template('main.html')
 
         @self.app.route('/login-page', methods=['GET'])
@@ -324,10 +329,16 @@ class FlaskServer:
     # WEB RTC
     def _setup_socketio(self):
         @self.socketio.on('request_frame')
-        def handle_request_frame():
-            frame_bytes = self.camera_service.get_current_frame()
+        def handle_request_frame(params):
+            attendace_id = params.get('attendace_id')
+            print(params,attendace_id)
+            frame_bytes, current_detections = self.camera_service.get_current_frame(attendace_id)
+            
             if frame_bytes:
                 emit('new_frame', frame_bytes)
+
+            if len(current_detections['detections']) > 0:
+                emit('new_detection', current_detections)
 
     def run(self):
         self.socketio.run(self.app, host=self.ip, port=self.port, debug=True)
