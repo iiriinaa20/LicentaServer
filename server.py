@@ -253,8 +253,41 @@ class FlaskServer:
         
         @self.app.route('/attendances/<course_id>/by_course', methods=['GET'])
         def read_attendances_by_course(course_id):
-            attendances = AttendanceRepository.read_all()
-            filtered_attendances = [attendance for attendance in attendances if attendance['course_id'] == course_id]
+            onlyTodayDate = request.args.get('date') or None
+            onlyTodayDate = None if onlyTodayDate == "null" else onlyTodayDate 
+            attendances = AttendanceRepository.read_by_course_id(course_id)
+            
+            a = []
+            if onlyTodayDate:
+                today = datetime.strptime(onlyTodayDate, '%Y-%m-%d').strftime('%Y-%m-%d')
+                for attendance in attendances:
+                    att_format = '%Y-%m-%dT%H:%M' if not isinstance(attendance['attendance'][0], datetime) and attendance['attendance'][0].startswith('202') else "%a, %d %b %Y %H:%M:%S %Z"
+                    if not isinstance(attendance['attendance'][0], datetime):
+                        attendance_date = datetime.strptime(attendance['attendance'][0], att_format)
+                    else:
+                        attendance_date = attendance['attendance'][0]
+                    att = attendance_date.strftime('%Y-%m-%d')
+                    if att == today:
+                        a.append(attendance)
+                    # print(today)
+                    # attendances = [attendance for attendance in attendances if att == today]
+            # print(attendances)
+            attendances = a if onlyTodayDate else attendances
+                
+            grouped_attendances = {}
+            for attendance in attendances:
+                user_id = attendance['user_id']
+                if user_id not in grouped_attendances:
+                    grouped_attendances[user_id] = []
+                grouped_attendances[user_id].append(attendance)
+
+            filtered_attendances = []
+            for user_id, user_attendances in grouped_attendances.items():
+                user = UserRepository.read(user_id)
+                for attendance in user_attendances:
+                    attendance['user'] = user
+                filtered_attendances.extend(user_attendances)
+
             return jsonify(filtered_attendances), 200
         
 
@@ -337,7 +370,7 @@ class FlaskServer:
             if frame_bytes:
                 emit('new_frame', frame_bytes)
 
-            if len(current_detections['detections']) > 0:
+            if 'detections' in current_detections.keys() and len(current_detections['detections']) > 0:
                 emit('new_detection', current_detections)
 
     def run(self):
